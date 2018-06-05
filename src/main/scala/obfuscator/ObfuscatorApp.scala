@@ -3,9 +3,7 @@ package obfuscator
 import java.io.{BufferedWriter, FileWriter}
 import java.security.MessageDigest
 
-import cats.Traverse
 import cats.data.Validated._
-import cats.implicits._
 
 import scala.io.Source
 import scala.util.{Failure, Success, Try}
@@ -24,8 +22,14 @@ object ObfuscatorApp extends App with AppConfig {
       case Failure(_) => Double.MinValue
     }
 
-  def obfuscateARow(implicit splitted: List[String]) =
-    VN.validate(toObfuscate, toScale)
+  def obfuscateARow(lnCnt: Int)(implicit splitted: List[String]) =
+    VN.validateRowAgainstColDefs(
+      toObfuscate,
+      "Column defs in validateRowAgainstColDefs is wrong (cannot obfuscate column which does not exists).",
+      toScale,
+      "Column defs in columnListToScale is wrong (cannot scale column which does not exists).",
+      lnCnt
+    )
       .map(_ => splitted.zipWithIndex)
       .map {
         _.map {
@@ -44,33 +48,43 @@ object ObfuscatorApp extends App with AppConfig {
     }
   }
 
-  def obfuscateAndWrite(ln: String)(implicit writer: BufferedWriter) = {
-    obfuscateARow(ln.split(separator).toList) match {
+  def obfuscateAndWrite(ln: String, lnCnt: Int)(implicit writer: BufferedWriter) = {
+    obfuscateARow(lnCnt)(ln.split(separator).toList) match {
       case Valid(l) =>
-        writer.write(l.mkString(separator)); writer.write("\r\n"); w.flush()
-      case Invalid(err) if (err.size == 1) =>
-        println(s"Error occured during execution. Error was: [$err]")
+        writeLine(l.mkString(separator))(writer)
       case Invalid(err) =>
-        println(s"Error occured during execution. Errors were: [${err.mkString_("", ",", "")}]")
+        println(s"Invalid row: [$err]")
     }
   }
 
-  Try(Source.fromFile(inputFullPath))
-    .flatMap { source =>
-      Success{
-        source.getLinesAndClose().foldLeft(0l) {
-          case (acc, _) if (acc == 0 && skipHeader) => 1l
-          case (acc, ln) =>
-            obfuscateAndWrite(ln)
-            acc + 1l
+  def writeLine(s: String)(implicit writer: BufferedWriter) = {
+    writer.write(s)
+    writer.write("\r\n")
+  }
+
+  VN.validateColDefs(toObfuscate, toScale).map {
+    case (obftor, scaler) => // XXX: not used, because of the scope, and since these are vals...
+      Try(Source.fromFile(inputFullPath))
+        .flatMap { source =>
+          Success {
+            source.getLinesAndClose().foldLeft(0) {
+              case (acc, l) if (acc == 0 && skipHeader) =>
+                writeLine(l)
+                1
+              case (acc, ln) =>
+                obfuscateAndWrite(ln, acc)
+                acc + 1
+            }
+          }
         }
-      }
-    } match {
-      case Success(_) =>
-        w.flush()
-        w.close()
-        println(s"Data was written out.")
-      case Failure(t) =>
-        println(s"Writer failed: [${t.getMessage}]")
-    }
+  } match {
+    case Valid(Success(cnt)) =>
+      w.flush()
+      w.close()
+      println(s"Data was written out. [$cnt] lines were processed.")
+    case Valid(Failure(t)) =>
+      println(s"Writer failed: [${t.getMessage}]")
+    case Invalid(err) =>
+      println(s"Invalid column def: [$err]")
+  }
 }
