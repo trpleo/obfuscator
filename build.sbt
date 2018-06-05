@@ -5,7 +5,7 @@ lazy val root = (project in file(".")).
     inThisBuild(List(
       organization := "org.obfuscator",
       scalaVersion := "2.12.6",
-      version      := "0.1.0-SNAPSHOT"
+      version := "0.1.0-SNAPSHOT"
     )),
     name := "obfuscator",
     libraryDependencies ++= Seq(
@@ -13,4 +13,8 @@ lazy val root = (project in file(".")).
       cats,
       appconfig
     )
-  )
+  ).
+  settings(
+    mainClass in assembly := Some("obfuscator.ObfuscatorApp"),
+    assemblyJarName in assembly := s"obfuscator-$version.jar")
+
