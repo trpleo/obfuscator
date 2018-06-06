@@ -4,7 +4,7 @@ Obfuscator application
 **Latest release: [0.1.0](https://github.com/trpleo/obfuscator.git)**
 
 **Documentation:** [User Guide](https://github.com/trpleo/obfuscator/tree/develop/script/README.md)<br/>
-**Continuous Integration:** <br
+**Continuous Integration:** [![Build Status](https://travis-ci.org/trpleo/obfuscator.svg?branch=master)](https://travis-ci.org/trpleo/obfuscator) <br
 />
 **License:** [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 

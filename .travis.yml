@@ -1,15 +1,25 @@
 language: scala
 scala:
-   - 2.12.2
    - 2.12.6
 
 sudo: false
 
-install:
-  - ${INSTALL}
+cache:
+  directories:
+    - $HOME/.m2/repository
+    - $HOME/.sbt
+    - $HOME/.ivy2
 
 script:
-  - ${CMD}
+  - sbt ++$TRAVIS_SCALA_VERSION reload compile test:compile
+
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+
+notifications:
+  email:
+    - istvan.l.papp@gmail.com
 
 after_success:
   - util/generate-latest-docs.sh
