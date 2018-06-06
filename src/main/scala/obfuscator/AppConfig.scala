@@ -1,12 +1,11 @@
 package obfuscator
 
-import java.io.File
-import scala.collection.JavaConverters._
 import com.typesafe.config.ConfigFactory
+
+import scala.collection.JavaConverters._
 
 trait AppConfig {
   lazy val defaultConfig= ConfigFactory.parseResources("defaults.conf")
-//  lazy val fallbackConfig = ConfigFactory.parseFile(new File("./obfuscation.conf")).withFallback(defaultConfig).resolve()
   val config = ConfigFactory.load().withFallback(defaultConfig).resolve()
   println(config)
 
