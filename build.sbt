@@ -1,4 +1,5 @@
 import Dependencies._
+import sbtassembly.AssemblyPlugin.defaultShellScript
 
 lazy val root = (project in file(".")).
   settings(
@@ -16,5 +17,6 @@ lazy val root = (project in file(".")).
   ).
   settings(
     mainClass in assembly := Some("obfuscator.ObfuscatorApp"),
-    assemblyJarName in assembly := s"obfuscator-$version.jar")
-
+    assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
+    assemblyOption in assembly := (assemblyOption in assembly).value.copy(prependShellScript = Some(defaultShellScript))
+  )
