@@ -1,0 +1,21 @@
+language: scala
+scala:
+   - 2.12.2
+   - 2.12.6
+
+sudo: false
+
+install:
+  - ${INSTALL}
+
+script:
+  - ${CMD}
+
+after_success:
+  - util/generate-latest-docs.sh
+  - util/compareBuilds.sh
+  - util/publish-snapshot-on-commit.sh
+
+branches:
+  only:
+    - master
